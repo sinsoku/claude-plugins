@@ -1,0 +1,11 @@
+{
+  "name": "sinsoku",
+  "description": "Personal Claude Code plugin",
+  "author": {
+    "name": "sinsoku",
+    "url": "https://github.com/sinsoku"
+  },
+  "homepage": "https://github.com/sinsoku/claude-plugins",
+  "repository": "https://github.com/sinsoku/claude-plugins",
+  "license": "MIT"
+}

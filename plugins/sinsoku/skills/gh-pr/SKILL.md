@@ -9,9 +9,19 @@ description: GitHub PR を作成・編集する。タイトル・説明文の生
 
 ### ステップ1: 現状把握
 
-以下を**並列**で実行:
+最初に比較対象を決める。以下を `<base>` として後続のコマンドに使う:
 
-- `git log <base>..HEAD --oneline`（`<base>` は main か master。ブランチのコミット一覧）
+```bash
+base="origin/$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)"
+```
+
+**ローカルの `main` / `master` を `<base>` に使ってはならない。** fetch していないと古く、他人の変更が diff とコミット一覧に混入する。必ず `origin/` 付きのリモート追跡ブランチを使う。
+
+`gh` が使えないリモート（GitHub 以外）では `git symbolic-ref --short refs/remotes/origin/HEAD` で代替する。
+
+続いて以下を**並列**で実行:
+
+- `git log <base>..HEAD --oneline`（ブランチのコミット一覧）
 - `git diff <base>...HEAD --stat`（変更ファイルの全体像）
 - `gh pr view --json url,title,body`（既存 PR の有無。あれば編集モード、なければ作成モード）
 - `git status -sb`（push 済みか、未コミットの変更がないか）

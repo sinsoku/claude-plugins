@@ -37,7 +37,13 @@ description: gitコミットを作成する。ブランチ確認・ステージ�
 
 今回の変更がそのブランチの作業に属するか判定する。
 
-1. `git log --oneline <base>..HEAD`（`<base>` は main か master）でブランチ固有のコミットを確認する
+1. `git log --oneline <base>..HEAD` でブランチ固有のコミットを確認する。`<base>` は origin の default branch を使う:
+
+   ```bash
+   base="origin/$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)"
+   ```
+
+   **ローカルの `main` / `master` を `<base>` に使ってはならない。** fetch していないと古く、他人のコミットがブランチ固有のコミットとして混入する。`gh` が使えないリモート（GitHub 以外）では `git symbolic-ref --short refs/remotes/origin/HEAD` で代替する。
 2. 判定:
    - コミットが無い（作業用に切っただけ）→ そのまま続行
    - 既存コミットのテーマや会話の文脈と関連する → そのまま続行

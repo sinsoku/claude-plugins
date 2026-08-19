@@ -22,11 +22,11 @@ argument-hint: "[--base <branch>]"
 2. 既存 PR の `baseRefName`（編集モードで PR が default branch 以外に向いている場合、diff の基準を PR に合わせる）
 3. デフォルトブランチ
 
-**ローカルの `main` / `master` を `<base>` に使ってはならない。** fetch していないと古く、他人の変更が diff とコミット一覧に混入する。必ず `origin/` 付きのリモート追跡ブランチを使う。`origin/<base-branch>` が無ければ `git fetch origin <base-branch>` してから進む。
+**ローカルの `main` / `master` を `<base>` に使ってはならない。** 必ず `origin/` 付きのリモート追跡ブランチを使い、**diff を取る前に `git fetch origin <base-branch>` を実行する**。base が古いと、マージ済みの他人の変更が diff とコミット一覧に混入する。
 
 `gh` が使えないリモート（GitHub 以外）では `git symbolic-ref --short refs/remotes/origin/HEAD` で代替する。
 
-base が決まったら以下を**並列**で実行:
+fetch 後、以下を**並列**で実行:
 
 - `git log <base>..HEAD --oneline`（ブランチのコミット一覧）
 - `git diff <base>...HEAD --stat`（変更ファイルの全体像）

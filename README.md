@@ -10,6 +10,13 @@ A repository of personal Claude Code plugins.
 /reload-plugins
 ```
 
+## Update
+
+```
+/plugin marketplace update sinsoku-plugins
+/reload-plugins
+```
+
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.

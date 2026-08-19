@@ -26,6 +26,8 @@ argument-hint: "[--base <branch>]"
 
 `gh` が使えないリモート（GitHub 以外）では `git symbolic-ref --short refs/remotes/origin/HEAD` で代替する。
 
+現在のブランチが `<base-branch>` と同じ場合、その PR は作れない。**ステップ2 に進まず中断し**、作業ブランチへの切り替えを促す。承認を取ったあとに `gh pr create` が失敗する形にしない。
+
 fetch 後、以下を**並列**で実行:
 
 - `git log <base>..HEAD --oneline`（ブランチのコミット一覧）

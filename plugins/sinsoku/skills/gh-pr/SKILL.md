@@ -1,6 +1,7 @@
 ---
 name: gh-pr
 description: GitHub PR を作成・編集する。タイトル・説明文の生成、ユーザー承認、gh pr create / edit の実行までを一括で行う。
+argument-hint: "[--base <branch>]"
 ---
 
 # gh-pr スキル
@@ -9,22 +10,26 @@ description: GitHub PR を作成・編集する。タイトル・説明文の生
 
 ### ステップ1: 現状把握
 
-最初に比較対象を決める。以下を `<base>` として後続のコマンドに使う:
+まず以下を**並列**で実行:
 
-```bash
-base="origin/$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)"
-```
+- `gh pr view --json url,title,body,baseRefName`（既存 PR の有無。あれば編集モード、なければ作成モード）
+- `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`（デフォルトブランチ）
+- `git status -sb`（push 済みか、未コミットの変更がないか）
 
-**ローカルの `main` / `master` を `<base>` に使ってはならない。** fetch していないと古く、他人の変更が diff とコミット一覧に混入する。必ず `origin/` 付きのリモート追跡ブランチを使う。
+結果から `<base-branch>` を次の優先順で決め、`base="origin/<base-branch>"` を後続のコマンドに使う:
+
+1. 引数 `$ARGUMENTS` の `--base <branch>`
+2. 既存 PR の `baseRefName`（編集モードで PR が default branch 以外に向いている場合、diff の基準を PR に合わせる）
+3. デフォルトブランチ
+
+**ローカルの `main` / `master` を `<base>` に使ってはならない。** fetch していないと古く、他人の変更が diff とコミット一覧に混入する。必ず `origin/` 付きのリモート追跡ブランチを使う。`origin/<base-branch>` が無ければ `git fetch origin <base-branch>` してから進む。
 
 `gh` が使えないリモート（GitHub 以外）では `git symbolic-ref --short refs/remotes/origin/HEAD` で代替する。
 
-続いて以下を**並列**で実行:
+base が決まったら以下を**並列**で実行:
 
 - `git log <base>..HEAD --oneline`（ブランチのコミット一覧）
 - `git diff <base>...HEAD --stat`（変更ファイルの全体像）
-- `gh pr view --json url,title,body`（既存 PR の有無。あれば編集モード、なければ作成モード）
-- `git status -sb`（push 済みか、未コミットの変更がないか）
 - PR テンプレートの確認: `.github/pull_request_template.md`（あれば構成はテンプレートに従う。チェックリストは正直に埋め、未実施の項目を `[x]` にしない）
 - 言語判定: 既存 PR やコミットログに合わせる（git-commit スキルと同じ基準）
 
@@ -104,9 +109,9 @@ PR は提案である。説明文の役割は課題への共感を得ること�
 
 - タイトル
 - 本文の全文
-- base ブランチ
+- base ブランチ（既定と異なる場合は、なぜその base かも添える）
 - push が未実施の場合はその旨（承認後に `git push -u origin <branch>` を実行する）
-- 編集モードの場合は変更前後の差分
+- 編集モードの場合は変更前後の差分。既存 PR の base を付け替える場合は変更前後の base を明示する
 
 ### ステップ5: 実行
 
@@ -116,13 +121,15 @@ PR は提案である。説明文の役割は課題への共感を得ること�
 2. 作成または編集（本文は HEREDOC で渡す）:
 
 ```bash
-gh pr create --title "タイトル" --body "$(cat <<'EOF'
+gh pr create --base <base-branch> --title "タイトル" --body "$(cat <<'EOF'
 本文
 EOF
 )"
 ```
 
-編集モードでは `gh pr edit` に同じ形式で `--title` / `--body` を渡す。
+`--base` にはリモート追跡ブランチ名（`origin/` 付き）ではなくブランチ名を渡す。
+
+編集モードでは `gh pr edit` に同じ形式で `--title` / `--body` を渡す。base の付け替えは、ユーザーが `--base` を指定したときだけ `gh pr edit --base <base-branch>` を実行する。
 
 レビュー中に変更内容が説明文と食い違ったら、マージ前に説明文を更新する（説明文は将来の開発者が読む永続的な記録のため）。
 
